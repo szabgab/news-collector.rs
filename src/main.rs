@@ -1,11 +1,10 @@
 use chrono::{DateTime, Utc};
 use clap::Parser;
 use feed_rs::parser;
+use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize, Serializer};
 use std::fs::File;
 use std::io::Write;
-//use chrono::serde::ts_seconds;
-use reqwest::header::USER_AGENT;
 
 const FEEDS: &str = "feeds";
 const SITE: &str = "_site";
@@ -47,7 +46,7 @@ struct Post {
 
     #[serde(serialize_with = "ts_iso")]
     updated: DateTime<Utc>,
-    // site_title: String,
+    site_title: String,
     // site_id: String,
 }
 
@@ -95,7 +94,7 @@ fn read_feeds(config: &Config) -> Vec<Post> {
             continue;
         }
 
-        //let site_title = feed.title;
+        let site_title = feed.title.clone();
         // let site_title = match feed.title {
         //     Some(val) => String::from("XX"), //format!("{}", val),
         //     None => {
@@ -136,8 +135,8 @@ fn read_feeds(config: &Config) -> Vec<Post> {
                 title,
                 updated,
                 url: entry.links[0].href.clone(), // TODO why is this a list?
-                                                  // site_id: filename.file_name().unwrap().to_str().unwrap().to_string(),
-                                                  // site_title: site_title,
+                // site_id: filename.file_name().unwrap().to_str().unwrap().to_string(),
+                site_title: site_title.clone(),
             });
         }
     }
