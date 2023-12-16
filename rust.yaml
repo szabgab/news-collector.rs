@@ -1,6 +1,18 @@
 title: Rust news
 description: A collection of the most recent news about the Rust programming language
 feeds:
+  - site: https://blog.rust-lang.org/
+    url: https://blog.rust-lang.org/feed.xml
+    title: Rust-Lang Main Blog
+  - site: https://blog.rust-lang.org/inside-rust/ 
+    url: https://blog.rust-lang.org/inside-rust/feed.xml
+    title: Inside Rust
+  - site: https://stackoverflow.com/questions/tagged/rust
+    url: https://stackoverflow.com/feeds/tag/rust
+    title: Rust questions on StackOverflow
+  - site: https://www.reddit.com/r/rust
+    url: https://www.reddit.com/r/rust.rss
+    title: r/rust
   - site: https://rust.code-maven.com/
     url: https://rust.code-maven.com/atom
     title: Rust Maven
