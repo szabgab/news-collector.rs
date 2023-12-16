@@ -42,7 +42,7 @@ struct Config {
 #[derive(Debug, Serialize)]
 struct Post {
     title: String,
-    // url: String,
+    url: String,
     // updated: DateTime<Utc>,
     // site_title: String,
     // site_id: String,
@@ -124,7 +124,7 @@ fn read_feeds(config: &Config) -> Vec<Post> {
             posts.push(Post {
                 title,
                 // updated: updated,
-                // url: entry.links[0].href,
+                url: entry.links[0].href.clone(),
                 // site_id: filename.file_name().unwrap().to_str().unwrap().to_string(),
                 // site_title: site_title,
             });
