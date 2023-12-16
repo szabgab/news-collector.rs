@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
 //use chrono::{DateTime, Utc};
+use reqwest::header::USER_AGENT;
 
 const FEEDS: &str = "feeds";
 const SITE: &str = "_site";
@@ -185,11 +186,17 @@ fn download(config: &Config, limit: u32) {
         }
     }
 
+    let client = reqwest::blocking::Client::new();
+
     let mut count = 0;
     for feed in &config.feeds {
         log::info!("{} {} {}", feed.title, feed.site, feed.url);
 
-        let res = match reqwest::blocking::get(&feed.url) {
+        let res = match client
+            .get(&feed.url)
+            .header(USER_AGENT, "News Collector 0.1.0")
+            .send()
+        {
             Ok(res) => res,
             Err(err) => {
                 log::error!("Error while fetching {}: {}", feed.url, err);
@@ -197,9 +204,8 @@ fn download(config: &Config, limit: u32) {
             }
         };
 
-        log::info!("status: {:?}", res.status());
         if res.status() != 200 {
-            log::error!("status: {:?}", res.status());
+            log::error!("status was {:?} when fetching {}", res.status(), feed.url);
             continue;
         }
 
