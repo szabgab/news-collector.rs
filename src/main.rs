@@ -1,6 +1,8 @@
 use clap::Parser;
 use serde::Deserialize;
 
+const FEEDS: &str = "feeds";
+
 #[derive(Parser)]
 #[command(version)]
 struct Cli {
@@ -11,7 +13,7 @@ struct Cli {
 #[derive(Debug, Deserialize)]
 struct Feed {
     site: String,
-    feed: String,
+    url: String,
     title: String,
 }
 
@@ -29,8 +31,44 @@ fn main() {
     log::debug!("{:?}", config);
 
     if args.download {
-        for feed in config.feeds {
-            log::info!("{} {} {}", feed.title, feed.site, feed.feed);
+        download(&config);
+    }
+}
+
+fn download(config: &Config) {
+    let feeds_folder = std::path::PathBuf::from(FEEDS);
+    if !feeds_folder.exists() {
+        match std::fs::create_dir(feeds_folder) {
+            Ok(_) => {}
+            Err(err) => {
+                log::error!("Could not create the '{}' folder: {}", FEEDS, err);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    for feed in &config.feeds {
+        log::info!("{} {} {}", feed.title, feed.site, feed.url);
+
+        let res = match reqwest::blocking::get(&feed.url) {
+            Ok(res) => res,
+            Err(err) => {
+                log::error!("Error while fetching {}: {}", feed.url, err);
+                continue;
+            }
+        };
+
+        log::info!("status: {:?}", res.status());
+        if res.status() == 200 {
+            println!("saving!");
+            let text = match res.text() {
+                Ok(val) => val,
+                Err(err) => {
+                    log::error!("Error: {}", err);
+                    continue;
+                }
+            };
+            log::debug!("text: {}", text);
         }
     }
 }
