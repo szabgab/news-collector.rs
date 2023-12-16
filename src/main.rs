@@ -107,7 +107,7 @@ fn read_feeds(config: &Config) -> Vec<Post> {
             log::debug!("updated: {:?}", entry.updated);
             log::debug!("links: {:?}", entry.links); // TODO why is this a list?
             let title = match entry.title {
-                Some(val) => format!("{:?}", val),
+                Some(val) => val.content,
                 None => {
                     log::warn!("Missing title");
                     continue;
