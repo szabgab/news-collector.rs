@@ -13,6 +13,9 @@ struct Cli {
 
     #[arg(long, default_value_t = 0)]
     limit: u32,
+
+    #[arg(long)]
+    config: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -32,7 +35,7 @@ fn main() {
     log::info!("Starting the News collector");
 
     let args = Cli::parse();
-    let config = read_config("rust.yaml");
+    let config = read_config(&args.config);
     log::debug!("{:?}", config);
 
     if args.download {
