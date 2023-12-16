@@ -1,9 +1,10 @@
+use chrono::{DateTime, Utc};
 use clap::Parser;
 use feed_rs::parser;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use std::fs::File;
 use std::io::Write;
-//use chrono::{DateTime, Utc};
+//use chrono::serde::ts_seconds;
 use reqwest::header::USER_AGENT;
 
 const FEEDS: &str = "feeds";
@@ -43,9 +44,19 @@ struct Config {
 struct Post {
     title: String,
     url: String,
-    // updated: DateTime<Utc>,
+
+    #[serde(serialize_with = "ts_iso")]
+    updated: DateTime<Utc>,
     // site_title: String,
     // site_id: String,
+}
+
+fn ts_iso<S>(date: &DateTime<Utc>, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let string = date.format("%Y-%m-%d %H:%M:%S").to_string();
+    s.serialize_str(&string)
 }
 
 fn main() {
@@ -103,9 +114,9 @@ fn read_feeds(config: &Config) -> Vec<Post> {
         };
         //log::debug!("feed: {:?}", feed);
         for entry in feed.entries {
-            log::debug!("title: {:?}", entry.title);
-            log::debug!("updated: {:?}", entry.updated);
-            log::debug!("links: {:?}", entry.links); // TODO why is this a list?
+            //log::debug!("title: {:?}", entry.title);
+            //log::debug!("updated: {:?}", entry.updated);
+            //log::debug!("links: {:?}", entry.links);
             let title = match entry.title {
                 Some(val) => val.content,
                 None => {
@@ -113,20 +124,20 @@ fn read_feeds(config: &Config) -> Vec<Post> {
                     continue;
                 }
             };
-            // let updated = match entry.updated {
-            //     Some(val) => val,
-            //     None => {
-            //         log::warn!("Missing updated field");
-            //         continue;
-            //     }
-            // };
+            let updated = match entry.updated {
+                Some(val) => val,
+                None => {
+                    log::warn!("Missing updated field");
+                    continue;
+                }
+            };
 
             posts.push(Post {
                 title,
-                // updated: updated,
-                url: entry.links[0].href.clone(),
-                // site_id: filename.file_name().unwrap().to_str().unwrap().to_string(),
-                // site_title: site_title,
+                updated,
+                url: entry.links[0].href.clone(), // TODO why is this a list?
+                                                  // site_id: filename.file_name().unwrap().to_str().unwrap().to_string(),
+                                                  // site_title: site_title,
             });
         }
     }
