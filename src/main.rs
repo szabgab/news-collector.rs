@@ -8,6 +8,9 @@ const FEEDS: &str = "feeds";
 struct Cli {
     #[arg(long, default_value_t = false)]
     download: bool,
+
+    #[arg(long, default_value_t = 0)]
+    limit: u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -31,11 +34,11 @@ fn main() {
     log::debug!("{:?}", config);
 
     if args.download {
-        download(&config);
+        download(&config, args.limit);
     }
 }
 
-fn download(config: &Config) {
+fn download(config: &Config, limit: u32) {
     let feeds_folder = std::path::PathBuf::from(FEEDS);
     if !feeds_folder.exists() {
         match std::fs::create_dir(feeds_folder) {
@@ -47,6 +50,7 @@ fn download(config: &Config) {
         }
     }
 
+    let mut count = 0;
     for feed in &config.feeds {
         log::info!("{} {} {}", feed.title, feed.site, feed.url);
 
@@ -69,6 +73,11 @@ fn download(config: &Config) {
                 }
             };
             log::debug!("text: {}", text);
+
+            count += 1;
+            if 0 < limit && limit <= count {
+                break;
+            }
         }
     }
 }

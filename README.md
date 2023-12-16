@@ -24,3 +24,5 @@ Separate commands for
 GitHub Actions
 We could add the "locally stored json files" to the web site and then we could download them from there before every run.
 
+Also store the log on the web server so we can see it there as well.
+
