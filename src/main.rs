@@ -1,4 +1,12 @@
+use clap::Parser;
 use serde::Deserialize;
+
+#[derive(Parser)]
+#[command(version)]
+struct Cli {
+    #[arg(long, default_value_t = false)]
+    download: bool,
+}
 
 #[derive(Debug, Deserialize)]
 struct Feed {
@@ -13,10 +21,17 @@ struct Config {
 }
 
 fn main() {
+    simple_logger::init_with_env().unwrap();
+    log::info!("Starting the News collector");
+
+    let args = Cli::parse();
     let config = read_config("rust.yaml");
-    println!("{:?}", config);
-    for feed in config.feeds {
-        println!("{} {} {}", feed.title, feed.site, feed.feed);
+    log::debug!("{:?}", config);
+
+    if args.download {
+        for feed in config.feeds {
+            log::info!("{} {} {}", feed.title, feed.site, feed.feed);
+        }
     }
 }
 
