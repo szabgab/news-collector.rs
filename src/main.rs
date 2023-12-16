@@ -1,9 +1,12 @@
 use clap::Parser;
+use feed_rs::parser;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Write;
+//use chrono::{DateTime, Utc};
 
 const FEEDS: &str = "feeds";
+const SITE: &str = "_site";
 
 #[derive(Parser)]
 #[command(version)]
@@ -16,10 +19,13 @@ struct Cli {
 
     #[arg(long)]
     config: String,
+
+    #[arg(long, default_value_t = false)]
+    web: bool,
 }
 
 #[derive(Debug, Deserialize)]
-struct Feed {
+struct FeedConfig {
     site: String,
     url: String,
     title: String,
@@ -27,7 +33,15 @@ struct Feed {
 
 #[derive(Debug, Deserialize)]
 struct Config {
-    feeds: Vec<Feed>,
+    feeds: Vec<FeedConfig>,
+}
+
+struct Post {
+    title: String,
+    // url: String,
+    // updated: DateTime<Utc>,
+    // site_title: String,
+    // site_id: String,
 }
 
 fn main() {
@@ -41,9 +55,104 @@ fn main() {
     if args.download {
         download(&config, args.limit);
     }
+
+    if args.web {
+        generate_web_page(&config);
+    }
+}
+
+fn read_feeds(config: &Config) -> Vec<Post> {
+    log::info!("Start reading feeds");
+
+    let feeds_folder = std::path::PathBuf::from(FEEDS);
+    if !feeds_folder.exists() {
+        log::error!("Feed folder {} does not exist. Exciting.", FEEDS);
+        std::process::exit(1);
+    }
+    let mut posts: Vec<Post> = vec![];
+
+    for feed in &config.feeds {
+        log::info!("{} {} {}", feed.title, feed.site, feed.url);
+        let filename = get_filename(feed);
+        log::info!("file: {:?}", filename);
+        if !filename.exists() {
+            log::warn!("File {:?} does not exist", filename);
+            continue;
+        }
+
+        //let site_title = feed.title;
+        // let site_title = match feed.title {
+        //     Some(val) => String::from("XX"), //format!("{}", val),
+        //     None => {
+        //         log::error!("Title is missing from the configuration");
+        //         continue;
+        //     }
+        // };
+
+        let text = std::fs::read_to_string(filename).unwrap();
+        let feed = match parser::parse(text.as_bytes()) {
+            Ok(val) => val,
+            Err(err) => {
+                log::error!("feed: {:?} error {}", feed, err);
+                continue;
+            }
+        };
+        //log::debug!("feed: {:?}", feed);
+        for entry in feed.entries {
+            log::debug!("title: {:?}", entry.title);
+            log::debug!("updated: {:?}", entry.updated);
+            log::debug!("links: {:?}", entry.links); // TODO why is this a list?
+            let title = match entry.title {
+                Some(val) => format!("{:?}", val),
+                None => {
+                    log::warn!("Missing title");
+                    continue;
+                }
+            };
+            // let updated = match entry.updated {
+            //     Some(val) => val,
+            //     None => {
+            //         log::warn!("Missing updated field");
+            //         continue;
+            //     }
+            // };
+
+            posts.push(Post {
+                title,
+                // updated: updated,
+                // url: entry.links[0].href,
+                // site_id: filename.file_name().unwrap().to_str().unwrap().to_string(),
+                // site_title: site_title,
+            });
+        }
+    }
+
+    posts
+}
+
+fn generate_web_page(config: &Config) {
+    log::info!("Start generating web page");
+
+    let posts = read_feeds(config);
+    for post in posts {
+        log::debug!("{}", post.title);
+    }
+
+    let site_folder = std::path::PathBuf::from(SITE);
+    if !site_folder.exists() {
+        match std::fs::create_dir(&site_folder) {
+            Ok(_) => {}
+            Err(err) => {
+                log::error!("Could not create the '{}' folder: {}", SITE, err);
+                std::process::exit(1);
+            }
+        }
+    }
 }
 
 fn download(config: &Config, limit: u32) {
+    log::info!("Start downloading feeds");
+
     let feeds_folder = std::path::PathBuf::from(FEEDS);
     if !feeds_folder.exists() {
         match std::fs::create_dir(&feeds_folder) {
@@ -73,9 +182,9 @@ fn download(config: &Config, limit: u32) {
             continue;
         }
 
-        let filename = feed.url.replace("://", "-").replace('/', "-");
+        let filename = get_filename(feed);
 
-        log::info!("Saving feed as '{}'", filename);
+        log::info!("Saving feed as '{:?}'", filename);
         let text = match res.text() {
             Ok(val) => val,
             Err(err) => {
@@ -83,7 +192,6 @@ fn download(config: &Config, limit: u32) {
                 continue;
             }
         };
-        let filename = feeds_folder.join(filename);
         let mut file = File::create(filename).unwrap();
         writeln!(&mut file, "{}", &text).unwrap();
 
@@ -92,6 +200,12 @@ fn download(config: &Config, limit: u32) {
             break;
         }
     }
+}
+
+fn get_filename(feed: &FeedConfig) -> std::path::PathBuf {
+    let feeds_folder = std::path::PathBuf::from(FEEDS);
+    let filename = feed.url.replace("://", "-").replace('/', "-");
+    feeds_folder.join(filename)
 }
 
 fn read_config(path: &str) -> Config {
