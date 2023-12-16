@@ -4,7 +4,7 @@ feeds:
   - site: https://blog.rust-lang.org/
     url: https://blog.rust-lang.org/feed.xml
     title: Rust-Lang Main Blog
-  - site: https://blog.rust-lang.org/inside-rust/ 
+  - site: https://blog.rust-lang.org/inside-rust/
     url: https://blog.rust-lang.org/inside-rust/feed.xml
     title: Inside Rust
   - site: https://stackoverflow.com/questions/tagged/rust
@@ -19,3 +19,12 @@ feeds:
   - site: https://blog.m-ou.se/
     url: https://blog.m-ou.se/index.xml
     title: Mara's Blog (Mara Bos)
+  - site: https://rust-analyzer.github.io/
+    url: https://rust-analyzer.github.io/feed.xml
+    title: rust-analyzer
+  - site: https://www.thecodedmessage.com/
+    url: https://www.thecodedmessage.com/tags/computers/index.xml
+    title: The Coded Message by Jimmy Hartzell
+  - site: https://smallcultfollowing.com/babysteps/
+    url: https://smallcultfollowing.com/babysteps//atom.xml
+    title: baby steps by Niko Matsakis
