@@ -1,5 +1,7 @@
 use clap::Parser;
 use serde::Deserialize;
+use std::fs::File;
+use std::io::Write;
 
 const FEEDS: &str = "feeds";
 
@@ -41,7 +43,7 @@ fn main() {
 fn download(config: &Config, limit: u32) {
     let feeds_folder = std::path::PathBuf::from(FEEDS);
     if !feeds_folder.exists() {
-        match std::fs::create_dir(feeds_folder) {
+        match std::fs::create_dir(&feeds_folder) {
             Ok(_) => {}
             Err(err) => {
                 log::error!("Could not create the '{}' folder: {}", FEEDS, err);
@@ -63,21 +65,28 @@ fn download(config: &Config, limit: u32) {
         };
 
         log::info!("status: {:?}", res.status());
-        if res.status() == 200 {
-            println!("saving!");
-            let text = match res.text() {
-                Ok(val) => val,
-                Err(err) => {
-                    log::error!("Error: {}", err);
-                    continue;
-                }
-            };
-            log::debug!("text: {}", text);
+        if res.status() != 200 {
+            log::error!("status: {:?}", res.status());
+            continue;
+        }
 
-            count += 1;
-            if 0 < limit && limit <= count {
-                break;
+        let filename = feed.url.replace("://", "-").replace('/', "-");
+
+        log::info!("Saving feed as '{}'", filename);
+        let text = match res.text() {
+            Ok(val) => val,
+            Err(err) => {
+                log::error!("Error: {}", err);
+                continue;
             }
+        };
+        let filename = feeds_folder.join(filename);
+        let mut file = File::create(filename).unwrap();
+        writeln!(&mut file, "{}", &text).unwrap();
+
+        count += 1;
+        if 0 < limit && limit <= count {
+            break;
         }
     }
 }
