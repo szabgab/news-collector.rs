@@ -1,6 +1,6 @@
 use clap::Parser;
 use feed_rs::parser;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
 //use chrono::{DateTime, Utc};
@@ -33,9 +33,12 @@ struct FeedConfig {
 
 #[derive(Debug, Deserialize)]
 struct Config {
+    title: String,
+    description: String,
     feeds: Vec<FeedConfig>,
 }
 
+#[derive(Debug, Serialize)]
 struct Post {
     title: String,
     // url: String,
@@ -134,7 +137,7 @@ fn generate_web_page(config: &Config) {
     log::info!("Start generating web page");
 
     let posts = read_feeds(config);
-    for post in posts {
+    for post in &posts {
         log::debug!("{}", post.title);
     }
 
@@ -148,6 +151,24 @@ fn generate_web_page(config: &Config) {
             }
         }
     }
+
+    let template = include_str!("../templates/index.html");
+    let template = liquid::ParserBuilder::with_stdlib()
+        .build()
+        .unwrap()
+        .parse(template)
+        .unwrap();
+
+    let globals = liquid::object!({
+        "posts": &posts,
+        "title": config.title,
+        "description": config.description,
+    });
+    let output = template.render(&globals).unwrap();
+
+    let path = site_folder.join("index.html");
+    let mut file = File::create(path).unwrap();
+    writeln!(&mut file, "{}", output).unwrap();
 }
 
 fn download(config: &Config, limit: u32) {
