@@ -142,6 +142,7 @@ fn read_feeds(config: &Config) -> Vec<Post> {
         }
     }
 
+    posts.sort_by(|a, b| b.updated.cmp(&a.updated));
     posts
 }
 
