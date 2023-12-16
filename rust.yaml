@@ -1,0 +1,7 @@
+feeds:
+  - site: https://rust.code-maven.com/
+    feed: https://rust.code-maven.com/atom
+    title: Rust Maven
+  - site: https://blog.m-ou.se/
+    feed: https://blog.m-ou.se/index.xml
+    title: Mara's Blog (Mara Bos)
