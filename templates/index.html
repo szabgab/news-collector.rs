@@ -13,7 +13,7 @@
         <div class="content">
         {% for post in posts %}
           <h2 class="title"><a href="{{post.url}}">{{post.title}}</a></h2>
-          <span>Published by {{post.site_title}} at {{post.updated}}</span>
+          <span>Published by <span class="tag is-primary is-light">{{post.site_title}}</span> at {{post.updated}}</span>
         {% endfor %}
         </div>
       </div>
