@@ -28,3 +28,6 @@ feeds:
   - site: https://smallcultfollowing.com/babysteps/
     url: https://smallcultfollowing.com/babysteps//atom.xml
     title: baby steps by Niko Matsakis
+  - site: https://mainmatter.com/
+    url: https://mainmatter.com/feed.xml
+    title: Mainmatter
