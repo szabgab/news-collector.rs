@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, SubsecRound, Utc};
 use clap::Parser;
 use feed_rs::parser;
 use reqwest::header::USER_AGENT;
@@ -8,6 +8,8 @@ use std::io::Write;
 
 const FEEDS: &str = "feeds";
 const SITE: &str = "_site";
+
+pub type Partials = liquid::partials::EagerCompiler<liquid::partials::InMemorySource>;
 
 #[derive(Parser)]
 #[command(version)]
@@ -148,7 +150,13 @@ fn read_feeds(config: &Config) -> Vec<Post> {
 fn generate_web_page(config: &Config) {
     log::info!("Start generating web page");
 
-    let now: DateTime<Utc> = Utc::now();
+    let now: DateTime<Utc> = Utc::now().trunc_subsecs(0);
+
+    let mut partials = Partials::empty();
+    partials.add(
+        "templates/navbar.html",
+        include_str!("../templates/navbar.html"),
+    );
 
     let posts = read_feeds(config);
     for post in &posts {
@@ -168,6 +176,7 @@ fn generate_web_page(config: &Config) {
 
     let template = include_str!("../templates/index.html");
     let template = liquid::ParserBuilder::with_stdlib()
+        .partials(partials)
         .build()
         .unwrap()
         .parse(template)

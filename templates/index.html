@@ -8,8 +8,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   </head>
   <body>
-    <section class="section">
+      <section class="section">
       <div class="container">
+        {% include 'templates/navbar.html' %}
         <div class="content">
         {% for post in posts %}
           <div class="box {{post.feed_id}}">
