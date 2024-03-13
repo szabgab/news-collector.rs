@@ -1,5 +1,9 @@
 # Collecting news from atom and RSS feeds
 
+Currently the code and the configuration file is in the same repo. At one point they will be separated to make it easy to reuse the news collector.
+
+The configuration file for [Rust news](https://rust-news.code-maven.com/) is the `rust.yaml` file. Send a pull-request to add another feed.
+
 
 
 ## Design
