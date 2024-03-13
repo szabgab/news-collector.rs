@@ -148,6 +148,8 @@ fn read_feeds(config: &Config) -> Vec<Post> {
 fn generate_web_page(config: &Config) {
     log::info!("Start generating web page");
 
+    let now: DateTime<Utc> = Utc::now();
+
     let posts = read_feeds(config);
     for post in &posts {
         log::debug!("{}", post.title);
@@ -175,6 +177,7 @@ fn generate_web_page(config: &Config) {
         "posts": &posts,
         "title": config.title,
         "description": config.description,
+        "now": now,
     });
     let output = template.render(&globals).unwrap();
 
