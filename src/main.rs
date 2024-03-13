@@ -47,7 +47,7 @@ struct Post {
     #[serde(serialize_with = "ts_iso")]
     updated: DateTime<Utc>,
     site_title: String,
-    // site_id: String,
+    feed_id: String,
 }
 
 fn ts_iso<S>(date: &DateTime<Utc>, s: S) -> Result<S::Ok, S::Error>
@@ -103,7 +103,7 @@ fn read_feeds(config: &Config) -> Vec<Post> {
         //     }
         // };
 
-        let text = std::fs::read_to_string(filename).unwrap();
+        let text = std::fs::read_to_string(&filename).unwrap();
         let feed = match parser::parse(text.as_bytes()) {
             Ok(val) => val,
             Err(err) => {
@@ -135,7 +135,7 @@ fn read_feeds(config: &Config) -> Vec<Post> {
                 title,
                 updated,
                 url: entry.links[0].href.clone(), // TODO why is this a list?
-                // site_id: filename.file_name().unwrap().to_str().unwrap().to_string(),
+                feed_id: filename.file_name().unwrap().to_str().unwrap().to_string(),
                 site_title: site_title.clone(),
             });
         }

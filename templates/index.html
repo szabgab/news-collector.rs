@@ -12,8 +12,10 @@
       <div class="container">
         <div class="content">
         {% for post in posts %}
-          <h2 class="title"><a href="{{post.url}}">{{post.title}}</a></h2>
-          <span>Published by <span class="tag is-primary is-light">{{post.site_title}}</span> at {{post.updated}}</span>
+          <div class="box {{post.feed_id}}">
+            <h2 class="title"><a href="{{post.url}}">{{post.title}}</a></h2>
+            <span>Published by <span class="tag is-primary is-light">{{post.site_title}}</span> at {{post.updated}}</span>
+          </div>
         {% endfor %}
         </div>
       </div>
