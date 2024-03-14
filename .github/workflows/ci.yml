@@ -46,18 +46,19 @@ jobs:
     - name: Setup Pages
       uses: actions/configure-pages@v4
 
-        #    - name: Download processor
-        #      run: |
-        #        wget https://ssg.code-maven.com/code-maven-web
-        #        chmod +x code-maven-web
+    - name: Compile binary
+      run: |
+        cargo build --release
+        mkdir _site
+        mv target/release/news-collector _site/
 
     - name: Generate pages
       env:
         RUST_LOG: debug
       run: |
-        cargo run  -- --download --web --config dev.yaml
+        ./_site/news-collector --download --web --config dev.yaml
         mv _site/index.html _site/dev.html
-        echo Hi > _site/index.html
+        echo '<h1>News Collector</h1> <a href="/dev">dev</a> <a href="/news-collector">download</a>   <a href="https://github.com/szabgab/news-collector.rs/">source</a>' > _site/index.html
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
