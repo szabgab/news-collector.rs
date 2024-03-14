@@ -142,10 +142,14 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
                 continue;
             };
 
+            let Some(link) = entry.links.first() else {
+                continue;
+            };
+
             posts.push(Post {
                 title,
                 updated,
-                url: entry.links[0].href.clone(), // TODO why is this a list?
+                url: link.href.clone(), // TODO why is this a list?
                 feed_id: filename.file_name().unwrap().to_str().unwrap().to_owned(),
                 site_title: site_title.clone(),
             });
