@@ -84,13 +84,12 @@ fn main() {
     }
 }
 
-fn read_feeds(config: &Config) -> Vec<Post> {
+fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
     log::info!("Start reading feeds");
 
     let feeds_folder = std::path::PathBuf::from(FEEDS);
     if !feeds_folder.exists() {
-        log::error!("Feed folder {} does not exist. Exciting.", FEEDS);
-        std::process::exit(1);
+        return Err(format!("Feed folder {} does not exist. Exciting.", FEEDS));
     }
     let mut posts: Vec<Post> = vec![];
 
@@ -151,7 +150,7 @@ fn read_feeds(config: &Config) -> Vec<Post> {
     }
 
     posts.sort_by(|a, b| b.updated.cmp(&a.updated));
-    posts
+    Ok(posts)
 }
 
 fn generate_web_page(config: &Config) {
@@ -165,7 +164,13 @@ fn generate_web_page(config: &Config) {
         include_str!("../templates/navbar.html"),
     );
 
-    let posts = read_feeds(config);
+    let posts = match read_feeds(config) {
+        Ok(val) => val,
+        Err(err) => {
+            log::error!("{err}");
+            std::process::exit(1);
+        }
+    };
     for post in &posts {
         log::debug!("{}", post.title);
     }
