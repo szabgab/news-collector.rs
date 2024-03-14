@@ -34,8 +34,6 @@ restriction  = { priority = -1, level = "deny" }
 cargo  = { priority = -1, level = "deny" }
 
 absolute_paths = "allow" # I actually like absolute_paths
-exit = "allow"
-print_stderr = "allow"
 implicit_return = "allow"
 single_call_fn = "allow"
 missing_docs_in_private_items = "allow"
