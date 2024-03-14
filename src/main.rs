@@ -95,7 +95,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
 
     let feeds_folder = std::path::PathBuf::from(FEEDS);
     if !feeds_folder.exists() {
-        return Err(format!("Feed folder {} does not exist. Exciting.", FEEDS));
+        return Err(format!("Feed folder {FEEDS} does not exist. Exciting."));
     }
     let mut posts: Vec<Post> = vec![];
 
@@ -177,7 +177,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
     if !site_folder.exists() {
         match std::fs::create_dir_all(&site_folder) {
             Ok(()) => {}
-            Err(err) => return Err(format!("Could not create the '{}' folder: {}", SITE, err)),
+            Err(err) => return Err(format!("Could not create the '{SITE}' folder: {err}")),
         }
     }
 
@@ -199,7 +199,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
 
     let path = site_folder.join("index.html");
     let mut file = File::create(path).unwrap();
-    writeln!(&mut file, "{}", output).unwrap();
+    writeln!(&mut file, "{output}").unwrap();
     Ok(())
 }
 
@@ -210,7 +210,7 @@ fn download(config: &Config, limit: u32) -> Result<u32, String> {
     if !feeds_folder.exists() {
         match std::fs::create_dir_all(&feeds_folder) {
             Ok(()) => {}
-            Err(err) => return Err(format!("Could not create the '{}' folder: {}", FEEDS, err)),
+            Err(err) => return Err(format!("Could not create the '{FEEDS}' folder: {err}")),
         }
     }
 

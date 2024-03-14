@@ -37,7 +37,6 @@ absolute_paths = "allow" # I actually like absolute_paths
 single_call_fn = "allow" # I think it is ok to have functions that are only called once. It makes each function smaller and easier to understand.
 missing_docs_in_private_items = "allow" # It's ok, we don't need documentation.
 unwrap_used = "allow"
-uninlined_format_args = "allow"
 shadow_reuse = "allow"
 indexing_slicing = "allow"
 single_match_else = "allow"
