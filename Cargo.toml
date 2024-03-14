@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Command line program to collect RSS and Atom feeds and generate a merged page from them."
 keywords = ["cli", "web", "static"]
-#categories = ["web-programming::http-server"]
+categories = ["web-programming", "web-programming::http-server"]
 readme = "README.md"
 repository = "https://github.com/szabgab/news-collector.rs"
 homepage = "https://news-collector.code-maven.com/"
@@ -49,7 +49,6 @@ min_ident_chars = "allow"
 str_to_string = "allow"
 indexing_slicing = "allow"
 single_match_else = "allow"
-cargo_common_metadata = "allow"
 blanket_clippy_restriction_lints = "allow"
 
 
