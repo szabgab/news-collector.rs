@@ -55,7 +55,9 @@ jobs:
       env:
         RUST_LOG: debug
       run: |
-        cargo run  -- --download --web --config rust.yaml
+        cargo run  -- --download --web --config dev.yaml
+        mv _site/index.html _site/dev.html
+        echo Hi > _site/index.html
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
