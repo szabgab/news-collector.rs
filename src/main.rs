@@ -175,7 +175,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
 
     let site_folder = std::path::PathBuf::from(SITE);
     if !site_folder.exists() {
-        match std::fs::create_dir(&site_folder) {
+        match std::fs::create_dir_all(&site_folder) {
             Ok(()) => {}
             Err(err) => return Err(format!("Could not create the '{}' folder: {}", SITE, err)),
         }
@@ -208,7 +208,7 @@ fn download(config: &Config, limit: u32) -> Result<u32, String> {
 
     let feeds_folder = std::path::PathBuf::from(FEEDS);
     if !feeds_folder.exists() {
-        match std::fs::create_dir(&feeds_folder) {
+        match std::fs::create_dir_all(&feeds_folder) {
             Ok(()) => {}
             Err(err) => return Err(format!("Could not create the '{}' folder: {}", FEEDS, err)),
         }
