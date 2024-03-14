@@ -34,13 +34,11 @@ restriction  = { priority = -1, level = "deny" }
 cargo  = { priority = -1, level = "deny" }
 
 absolute_paths = "allow" # I actually like absolute_paths
-implicit_return = "allow"
-single_call_fn = "allow"
+single_call_fn = "allow" # I think it is ok to have functions that are only called once. It makes each function smaller and easier to understand.
 missing_docs_in_private_items = "allow"
 arithmetic_side_effects = "allow"
 unwrap_used = "allow"
 create_dir = "allow"
-ignored_unit_patterns = "allow"
 uninlined_format_args = "allow"
 shadow_reuse = "allow"
 indexing_slicing = "allow"
@@ -48,4 +46,5 @@ single_match_else = "allow"
 blanket_clippy_restriction_lints = "allow"
 question_mark_used = "allow" # I want to use ?
 
+implicit_return = "allow" # I think I prefer having the explicit return statements so I might want to enable this
 
