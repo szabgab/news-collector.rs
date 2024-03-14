@@ -65,7 +65,14 @@ fn main() {
     log::info!("Starting the News collector");
 
     let args = Cli::parse();
-    let config = read_config(&args.config);
+    let config = match read_config(&args.config) {
+        Ok(val) => val,
+        Err(err) => {
+            eprintln!("{err}");
+            std::process::exit(1);
+        }
+    };
+
     log::debug!("{:?}", config);
 
     if args.download {
@@ -258,7 +265,7 @@ fn get_filename(feed: &FeedConfig) -> std::path::PathBuf {
     feeds_folder.join(filename)
 }
 
-fn read_config(path: &str) -> Config {
+fn read_config(path: &str) -> Result<Config, String> {
     let yaml_string = match std::fs::read_to_string(path) {
         Ok(val) => val,
         Err(err) => {
@@ -266,9 +273,9 @@ fn read_config(path: &str) -> Config {
             std::process::exit(1);
         }
     };
-    let cfg: Config = serde_yaml::from_str(&yaml_string).unwrap_or_else(|err| {
-        eprintln!("Could not read YAML config file '{path}': {err}");
-        std::process::exit(1);
-    });
-    cfg
+    let cfg: Config = match serde_yaml::from_str(&yaml_string) {
+        Ok(val) => val,
+        Err(err) => return Err(format!("Could not read YAML config file '{path}': {err}")),
+    };
+    Ok(cfg)
 }
