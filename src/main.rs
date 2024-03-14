@@ -216,7 +216,7 @@ fn download(config: &Config, limit: u32) -> Result<u32, String> {
 
     let client = reqwest::blocking::Client::new();
 
-    let mut count = 0;
+    let mut count: u32 = 0;
     for feed in &config.feeds {
         log::info!("{} {} {}", feed.title, feed.site, feed.url);
 
@@ -250,7 +250,7 @@ fn download(config: &Config, limit: u32) -> Result<u32, String> {
         let mut file = File::create(filename).unwrap();
         writeln!(&mut file, "{}", &text).unwrap();
 
-        count += 1;
+        count = count.saturating_add(1); // Making clippy::arithmetic_side_effects happy.
         if 0 < limit && limit <= count {
             break;
         }

@@ -36,7 +36,6 @@ cargo  = { priority = -1, level = "deny" }
 absolute_paths = "allow" # I actually like absolute_paths
 single_call_fn = "allow" # I think it is ok to have functions that are only called once. It makes each function smaller and easier to understand.
 missing_docs_in_private_items = "allow"
-arithmetic_side_effects = "allow"
 unwrap_used = "allow"
 create_dir = "allow"
 uninlined_format_args = "allow"
