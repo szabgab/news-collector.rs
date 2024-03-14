@@ -20,12 +20,12 @@ fn missing_config() {
     let result = Command::new("./target/release/news-collector")
         .output()
         .expect("failed to execute process");
-    let _stdout = std::str::from_utf8(&result.stdout).unwrap();
+    let stdout = std::str::from_utf8(&result.stdout).unwrap();
     let stderr = std::str::from_utf8(&result.stderr).unwrap();
     // print!("stdout: {stdout}");
     // print!("stderr: {stderr}");
     // println!("{}", result.status);
-
+    assert!(stdout.contains("Starting the News collector"));
     assert!(stderr.contains("Usage: news-collector --config <CONFIG>"));
 
     assert!(!result.status.success());
@@ -42,10 +42,11 @@ fn bad_config_file() {
         .output()
         .expect("failed to execute process");
 
-    let _stdout = std::str::from_utf8(&result.stdout).unwrap();
+    let stdout = std::str::from_utf8(&result.stdout).unwrap();
     let stderr = std::str::from_utf8(&result.stderr).unwrap();
     // print!("stdout: {stdout}");
     // print!("stderr: {stderr}");
+    assert!(stdout.contains("Starting the News collector"));
     assert!(stderr.contains("Config file 'qqrq.yaml' could not be read No such file or directory"));
     // println!("{}", result.status);
 
@@ -62,10 +63,11 @@ fn read_config_file() {
         .output()
         .expect("failed to execute process");
 
-    let _stdout = std::str::from_utf8(&result.stdout).unwrap();
+    let stdout = std::str::from_utf8(&result.stdout).unwrap();
     let stderr = std::str::from_utf8(&result.stderr).unwrap();
     //print!("stdout: {stdout}");
-    print!("stderr: {stderr}");
+    //print!("stderr: {stderr}");
+    assert!(stdout.contains("Starting the News collector"));
     assert!(stderr.is_empty());
     // println!("{}", result.status);
 
