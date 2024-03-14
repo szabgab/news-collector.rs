@@ -52,6 +52,7 @@ struct Post {
     feed_id: String,
 }
 
+#[allow(clippy::min_ident_chars)]
 fn ts_iso<S>(date: &DateTime<Utc>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
@@ -151,6 +152,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
         }
     }
 
+    #[allow(clippy::min_ident_chars)]
     posts.sort_by(|a, b| b.updated.cmp(&a.updated));
     Ok(posts)
 }
