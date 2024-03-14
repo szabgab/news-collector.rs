@@ -268,10 +268,7 @@ fn get_filename(feed: &FeedConfig) -> std::path::PathBuf {
 fn read_config(path: &str) -> Result<Config, String> {
     let yaml_string = match std::fs::read_to_string(path) {
         Ok(val) => val,
-        Err(err) => {
-            eprintln!("Config file '{path}' could not be read {err}");
-            std::process::exit(1);
-        }
+        Err(err) => return Err(format!("Config file '{path}' could not be read {err}")),
     };
     let cfg: Config = match serde_yaml::from_str(&yaml_string) {
         Ok(val) => val,
