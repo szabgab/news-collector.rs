@@ -23,3 +23,33 @@ feed-rs = "1.3.0"
 chrono = { version = "0.4", features = ["serde"] }
 liquid = "0.26"
 liquid-core = "0.26"
+
+[lints.clippy]
+pedantic = { priority = -1, level = "deny" }
+suspicious = { priority = -1, level = "deny" }
+complexity = { priority = -1, level = "deny" }
+perf = { priority = -1, level = "deny" }
+style = { priority = -1, level = "deny" }
+restriction  = { priority = -1, level = "deny" }
+cargo  = { priority = -1, level = "deny" }
+
+absolute_paths = "allow"
+exit = "allow"
+print_stderr = "allow"
+implicit_return = "allow"
+single_call_fn = "allow"
+missing_docs_in_private_items = "allow"
+arithmetic_side_effects = "allow"
+unwrap_used = "allow"
+create_dir = "allow"
+ignored_unit_patterns = "allow"
+uninlined_format_args = "allow"
+shadow_reuse = "allow"
+min_ident_chars = "allow"
+str_to_string = "allow"
+indexing_slicing = "allow"
+single_match_else = "allow"
+cargo_common_metadata = "allow"
+blanket_clippy_restriction_lints = "allow"
+
+
