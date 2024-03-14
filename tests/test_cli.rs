@@ -44,10 +44,11 @@ fn bad_config_file() {
 
     let stdout = std::str::from_utf8(&result.stdout).unwrap();
     let stderr = std::str::from_utf8(&result.stderr).unwrap();
-    // print!("stdout: {stdout}");
-    // print!("stderr: {stderr}");
+    //println!("stdout: '{stdout}'");
+    //println!("stderr: '{stderr}'");
     assert!(stdout.contains("Starting the News collector"));
-    assert!(stderr.contains("Config file 'qqrq.yaml' could not be read No such file or directory"));
+    assert!(stdout.contains("ERROR [news_collector] Config file 'qqrq.yaml' could not be read No such file or directory"));
+    assert!(stderr.is_empty());
     // println!("{}", result.status);
 
     assert_eq!(result.status, ExitStatus::from_raw(256 * 1));

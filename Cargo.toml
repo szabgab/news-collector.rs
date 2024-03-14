@@ -50,5 +50,6 @@ str_to_string = "allow"
 indexing_slicing = "allow"
 single_match_else = "allow"
 blanket_clippy_restriction_lints = "allow"
+question_mark_used = "allow" # I want to use ?
 
 

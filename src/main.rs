@@ -61,33 +61,32 @@ where
 }
 
 fn main() {
+    match run() {
+        Ok(_) => {}
+        Err(err) => {
+            log::error!("{err}");
+            std::process::exit(1);
+        }
+    };
+}
+fn run() -> Result<(), String> {
     simple_logger::init_with_env().unwrap();
     log::info!("Starting the News collector");
 
     let args = Cli::parse();
-    let config = match read_config(&args.config) {
-        Ok(val) => val,
-        Err(err) => {
-            eprintln!("{err}");
-            std::process::exit(1);
-        }
-    };
+    let config = read_config(&args.config)?;
 
     log::debug!("{:?}", config);
 
     if args.download {
-        match download(&config, args.limit) {
-            Ok(count) => log::info!("Count: {count}"),
-            Err(err) => {
-                log::error!("{err}");
-                std::process::exit(1);
-            }
-        }
+        let count = download(&config, args.limit)?;
+        log::info!("Count: {count}");
     }
 
     if args.web {
-        generate_web_page(&config);
+        generate_web_page(&config)?;
     }
+    Ok(())
 }
 
 fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
@@ -137,12 +136,9 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
                     continue;
                 }
             };
-            let updated = match entry.updated {
-                Some(val) => val,
-                None => {
-                    log::warn!("Missing updated field");
-                    continue;
-                }
+            let Some(updated) = entry.updated else {
+                log::warn!("Missing updated field");
+                continue;
             };
 
             posts.push(Post {
@@ -159,7 +155,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
     Ok(posts)
 }
 
-fn generate_web_page(config: &Config) {
+fn generate_web_page(config: &Config) -> Result<(), String> {
     log::info!("Start generating web page");
 
     let now: DateTime<Utc> = Utc::now().trunc_subsecs(0);
@@ -170,13 +166,7 @@ fn generate_web_page(config: &Config) {
         include_str!("../templates/navbar.html"),
     );
 
-    let posts = match read_feeds(config) {
-        Ok(val) => val,
-        Err(err) => {
-            log::error!("{err}");
-            std::process::exit(1);
-        }
-    };
+    let posts = read_feeds(config)?;
     for post in &posts {
         log::debug!("{}", post.title);
     }
@@ -185,10 +175,7 @@ fn generate_web_page(config: &Config) {
     if !site_folder.exists() {
         match std::fs::create_dir(&site_folder) {
             Ok(_) => {}
-            Err(err) => {
-                log::error!("Could not create the '{}' folder: {}", SITE, err);
-                std::process::exit(1);
-            }
+            Err(err) => return Err(format!("Could not create the '{}' folder: {}", SITE, err)),
         }
     }
 
@@ -211,6 +198,7 @@ fn generate_web_page(config: &Config) {
     let path = site_folder.join("index.html");
     let mut file = File::create(path).unwrap();
     writeln!(&mut file, "{}", output).unwrap();
+    Ok(())
 }
 
 fn download(config: &Config, limit: u32) -> Result<u32, String> {
