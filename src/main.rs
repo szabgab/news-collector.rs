@@ -48,7 +48,6 @@ struct Post {
     url: String,
 
     #[serde(serialize_with = "ts_iso")]
-    updated: DateTime<Utc>,
     published: DateTime<Utc>,
     site_title: String,
     feed_id: String,
@@ -143,11 +142,6 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
             //     }
             // };
 
-            let Some(updated) = entry.updated else {
-                log::warn!("Missing updated field {:?}", entry);
-                continue;
-            };
-
             let Some(published) = entry.published else {
                 log::warn!("Missing published field {:?}", entry);
                 continue;
@@ -159,18 +153,12 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
             };
             let title = title.content.clone();
 
-            log::debug!(
-                "Feed entry: updated='{updated}' published='{published}' title='{title}' links='{:?}'",
-                &entry.links
-            );
-
             let Some(link) = entry.links.first() else {
                 continue;
             };
 
             posts.push(Post {
                 title,
-                updated,
                 published,
                 url: link.href.clone(), // TODO why is this a list?
                 feed_id: filename.file_name().unwrap().to_str().unwrap().to_owned(),
