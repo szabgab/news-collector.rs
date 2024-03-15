@@ -33,6 +33,13 @@ struct FeedConfig {
     site: String,
     url: String,
     title: String,
+
+    #[serde(default = "get_empty_string")]
+    feed_id: String,
+}
+
+fn get_empty_string() -> String {
+    String::new()
 }
 
 #[derive(Debug, Deserialize)]
@@ -101,21 +108,21 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
     }
     let mut posts: Vec<Post> = vec![];
 
-    for feed in &config.feeds {
+    for feed_cfg in &config.feeds {
         log::info!(
             "Feed title='{}' site='{}' url='{}'",
-            feed.title,
-            feed.site,
-            feed.url
+            feed_cfg.title,
+            feed_cfg.site,
+            feed_cfg.url
         );
-        let filename = get_filename(feed);
+        let filename = get_filename(feed_cfg);
         log::info!("file: {filename:?}");
         if !filename.exists() {
             log::warn!("File {filename:?} does not exist");
             continue;
         }
 
-        let site_title = feed.title.clone();
+        let site_title = feed_cfg.title.clone();
         // let site_title = match feed.title {
         //     Some(val) => String::from("XX"), //format!("{}", val),
         //     None => {
@@ -128,7 +135,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
         let feed = match parser::parse(text.as_bytes()) {
             Ok(val) => val,
             Err(err) => {
-                log::error!("Parsing feed: {feed:?} error {err}");
+                log::error!("Parsing feed: {feed_cfg:?} error {err}");
                 continue;
             }
         };
@@ -162,7 +169,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
                 title,
                 published,
                 url: link.href.clone(), // TODO why is this a list?
-                feed_id: filename.file_name().unwrap().to_str().unwrap().to_owned(),
+                feed_id: feed_cfg.feed_id.clone(),
                 site_title: site_title.clone(),
             });
         }
@@ -285,9 +292,24 @@ fn read_config(path: &str) -> Result<Config, String> {
         Ok(val) => val,
         Err(err) => return Err(format!("Config file '{path}' could not be read {err}")),
     };
-    let cfg: Config = match serde_yaml::from_str(&yaml_string) {
+    let mut cfg: Config = match serde_yaml::from_str(&yaml_string) {
         Ok(val) => val,
         Err(err) => return Err(format!("Could not read YAML config file '{path}': {err}")),
     };
+
+    cfg.feeds = cfg
+        .feeds
+        .into_iter()
+        .map(|mut feed| {
+            feed.feed_id = get_filename(&feed)
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_owned();
+            feed
+        })
+        .collect::<Vec<FeedConfig>>();
+
     Ok(cfg)
 }
