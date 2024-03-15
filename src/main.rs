@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize, Serializer};
 use std::fs::File;
 use std::io::Write;
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 const FEEDS: &str = "feeds";
 const SITE: &str = "_site";
 
@@ -63,7 +64,7 @@ where
 
 fn main() {
     simple_logger::init_with_env().unwrap();
-    log::info!("Starting the News collector");
+    log::info!("Starting the News collector version {VERSION}");
 
     match run() {
         Ok(()) => {}
@@ -227,7 +228,7 @@ fn download(config: &Config, limit: u32) -> Result<u32, String> {
 
         let res = match client
             .get(&feed.url)
-            .header(USER_AGENT, "News Collector 0.1.0")
+            .header(USER_AGENT, format!("News Collector {VERSION}"))
             .send()
         {
             Ok(res) => res,
