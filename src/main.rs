@@ -143,19 +143,20 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
             // };
 
             let Some(published) = entry.published else {
-                log::warn!("Missing published field {:?}", entry);
+                log::error!("Missing published field {:?}", entry);
+                continue;
+            };
+
+            let Some(link) = entry.links.first() else {
+                log::error!("No link found {:?}", entry);
                 continue;
             };
 
             let Some(title) = entry.title else {
-                log::warn!("Missing title {:?}", &entry);
+                log::error!("Missing title {:?}", &entry);
                 continue;
             };
             let title = title.content.clone();
-
-            let Some(link) = entry.links.first() else {
-                continue;
-            };
 
             posts.push(Post {
                 title,
