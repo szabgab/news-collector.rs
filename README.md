@@ -2,6 +2,15 @@
 
 Used by [Rust news](https://rust-news.code-maven.com/)
 
+## Development
+
+
+```
+mkdir _site
+RUST_LOG=debug cargo run  -- --download --web --config dev.yaml > _site/log.txt
+```
+
+
 ## Design
 
 Separate commands for
