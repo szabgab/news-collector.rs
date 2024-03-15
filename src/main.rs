@@ -62,6 +62,9 @@ where
 }
 
 fn main() {
+    simple_logger::init_with_env().unwrap();
+    log::info!("Starting the News collector");
+
     match run() {
         Ok(()) => {}
         Err(err) => {
@@ -69,11 +72,9 @@ fn main() {
             std::process::exit(1);
         }
     };
+    log::info!("Ending the News collector");
 }
 fn run() -> Result<(), String> {
-    simple_logger::init_with_env().unwrap();
-    log::info!("Starting the News collector");
-
     let args = Cli::parse();
     let config = read_config(&args.config)?;
 
@@ -81,7 +82,7 @@ fn run() -> Result<(), String> {
 
     if args.download {
         let count = download(&config, args.limit)?;
-        log::info!("Count: {count}");
+        log::info!("Downloaded count: {count}");
     }
 
     if args.web {
