@@ -20,7 +20,7 @@ a:visited {
         {% for post in posts %}
           <div class="box {{post.feed_id}}">
             <h2 class="title"><a href="{{post.url}}">{{post.title}}</a></h2>
-            <span>Published by <span class="tag is-primary is-light">{{post.site_title}}</span> at {{post.updated}}</span>
+            <span>Published by <span class="tag is-primary is-light">{{post.site_title}}</span> at {{post.published}}</span>
           </div>
         {% endfor %}
         </div>

@@ -49,6 +49,7 @@ struct Post {
 
     #[serde(serialize_with = "ts_iso")]
     updated: DateTime<Utc>,
+    published: DateTime<Utc>,
     site_title: String,
     feed_id: String,
 }
@@ -79,11 +80,11 @@ fn run() -> Result<(), String> {
     let args = Cli::parse();
     let config = read_config(&args.config)?;
 
-    log::debug!("{:?}", config);
+    log::debug!("{config:?}");
 
     if args.download {
         let count = download(&config, args.limit)?;
-        log::info!("Downloaded count: {count}");
+        log::info!("Downloaded: {count} feeds out of {}", config.feeds.len());
     }
 
     if args.web {
@@ -102,11 +103,16 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
     let mut posts: Vec<Post> = vec![];
 
     for feed in &config.feeds {
-        log::info!("{} {} {}", feed.title, feed.site, feed.url);
+        log::info!(
+            "Feed title='{}' site='{}' url='{}'",
+            feed.title,
+            feed.site,
+            feed.url
+        );
         let filename = get_filename(feed);
-        log::info!("file: {:?}", filename);
+        log::info!("file: {filename:?}");
         if !filename.exists() {
-            log::warn!("File {:?} does not exist", filename);
+            log::warn!("File {filename:?} does not exist");
             continue;
         }
 
@@ -123,26 +129,40 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
         let feed = match parser::parse(text.as_bytes()) {
             Ok(val) => val,
             Err(err) => {
-                log::error!("feed: {:?} error {}", feed, err);
+                log::error!("Parsing feed: {feed:?} error {err}");
                 continue;
             }
         };
-        //log::debug!("feed: {:?}", feed);
+        //log::debug!("feed: {feed:?}");
         for entry in feed.entries {
-            //log::debug!("title: {:?}", entry.title);
-            //log::debug!("updated: {:?}", entry.updated);
-            //log::debug!("links: {:?}", entry.links);
-            let title = match entry.title {
-                Some(val) => val.content,
-                None => {
-                    log::warn!("Missing title");
-                    continue;
-                }
-            };
+            // let title = match &entry.title {
+            //     Some(val) => val.content.clone(),
+            //     None => {
+            //         log::warn!("Missing title {:?}", &entry);
+            //         continue;
+            //     }
+            // };
+
             let Some(updated) = entry.updated else {
-                log::warn!("Missing updated field");
+                log::warn!("Missing updated field {:?}", entry);
                 continue;
             };
+
+            let Some(published) = entry.published else {
+                log::warn!("Missing published field {:?}", entry);
+                continue;
+            };
+
+            let Some(title) = entry.title else {
+                log::warn!("Missing title {:?}", &entry);
+                continue;
+            };
+            let title = title.content.clone();
+
+            log::debug!(
+                "Feed entry: updated='{updated}' published='{published}' title='{title}' links='{:?}'",
+                &entry.links
+            );
 
             let Some(link) = entry.links.first() else {
                 continue;
@@ -151,6 +171,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
             posts.push(Post {
                 title,
                 updated,
+                published,
                 url: link.href.clone(), // TODO why is this a list?
                 feed_id: filename.file_name().unwrap().to_str().unwrap().to_owned(),
                 site_title: site_title.clone(),
@@ -159,7 +180,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
     }
 
     #[allow(clippy::min_ident_chars)]
-    posts.sort_by(|a, b| b.updated.cmp(&a.updated));
+    posts.sort_by(|a, b| b.published.cmp(&a.published));
     Ok(posts)
 }
 
@@ -233,7 +254,7 @@ fn download(config: &Config, limit: u32) -> Result<u32, String> {
         {
             Ok(res) => res,
             Err(err) => {
-                log::error!("Error while fetching {}: {}", feed.url, err);
+                log::error!("Error while fetching {}: {err}", feed.url);
                 continue;
             }
         };
@@ -245,11 +266,11 @@ fn download(config: &Config, limit: u32) -> Result<u32, String> {
 
         let filename = get_filename(feed);
 
-        log::info!("Saving feed as '{:?}'", filename);
+        log::info!("Saving feed as '{filename:?}'");
         let text = match res.text() {
             Ok(val) => val,
             Err(err) => {
-                log::error!("Error: {}", err);
+                log::error!("Error: {err}");
                 continue;
             }
         };
