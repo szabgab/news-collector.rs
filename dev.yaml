@@ -13,3 +13,7 @@ feeds:
   - site: https://rust.code-maven.com/
     url: https://rust.code-maven.com/atom
     title: Rust Maven
+  - site: https://rust-analyzer.github.io/
+    url: https://rust-analyzer.github.io/feed.xml
+    title: rust-analyzer
+
