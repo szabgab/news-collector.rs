@@ -23,6 +23,7 @@ feed-rs = "1.3.0"
 chrono = { version = "0.4", features = ["serde"] }
 liquid = "0.26"
 liquid-core = "0.26"
+regex = "1.10"
 
 [lints.clippy]
 pedantic = { priority = -1, level = "deny" }

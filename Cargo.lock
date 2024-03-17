@@ -784,6 +784,7 @@ dependencies = [
  "liquid",
  "liquid-core",
  "log",
+ "regex",
  "reqwest",
  "serde",
  "serde_yaml",

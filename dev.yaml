@@ -17,3 +17,9 @@ feeds:
     url: https://rust-analyzer.github.io/feed.xml
     title: rust-analyzer
 
+  - site:  https://blog.jetbrains.com/
+    url:   https://blog.jetbrains.com/feed/
+    title: JetBrains
+    filter: rust
+
+

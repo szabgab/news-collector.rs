@@ -1,6 +1,7 @@
 use chrono::{DateTime, SubsecRound, Utc};
 use clap::Parser;
 use feed_rs::parser;
+use regex::Regex;
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize, Serializer};
 use std::fs::File;
@@ -34,6 +35,9 @@ struct FeedConfig {
     site: String,
     url: String,
     title: String,
+
+    #[serde(default = "get_empty_string")]
+    filter: String,
 
     #[serde(default = "get_empty_string")]
     feed_id: String,
@@ -165,6 +169,35 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
                 continue;
             };
             let title = title.content.clone();
+
+            if !feed_cfg.filter.is_empty() {
+                let re = match Regex::new(&feed_cfg.filter) {
+                    Ok(re) => re,
+                    Err(err) => {
+                        log::error!("filter '{}' is not a valid regex: {err}", feed_cfg.filter);
+                        continue;
+                    }
+                };
+
+                let summary = match entry.summary {
+                    Some(val) => val.content,
+                    None => String::new(),
+                };
+
+                if re.captures(title.to_lowercase().as_str()).is_none()
+                    && re.captures(summary.to_lowercase().as_str()).is_none()
+                {
+                    log::info!(
+                        "Skipping entry {title} as it did not match filter '{}'",
+                        feed_cfg.filter
+                    );
+                    continue;
+                }
+                log::info!(
+                    "Including entry {title} as it matched filter '{}'",
+                    feed_cfg.filter
+                );
+            }
 
             posts.push(Post {
                 title,
