@@ -29,6 +29,7 @@ struct Cli {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct FeedConfig {
     site: String,
     url: String,
