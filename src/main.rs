@@ -234,6 +234,10 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         "templates/navbar.html",
         include_str!("../templates/navbar.html"),
     );
+    partials.add(
+        "templates/footer.html",
+        include_str!("../templates/footer.html"),
+    );
 
     let posts = read_feeds(config)?;
     for post in &posts {
