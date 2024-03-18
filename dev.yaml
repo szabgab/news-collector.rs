@@ -1,6 +1,7 @@
 title: News collector development
 description: A collection of posts
 per_feed_limit: 10
+config_url: https://github.com/szabgab/news-collector.rs/
 feeds:
   - site: https://blog.rust-lang.org/
     url: https://blog.rust-lang.org/feed.xml

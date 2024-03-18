@@ -32,6 +32,9 @@
 
     <div class="navbar-end">
       <div class="navbar-item">{{now}}</div>
+      {% if config.config_url %}
+        <div class="navbar-item"><a href="{{ config.config_url }}">config</a></div>
+      {% endif %}
       <div class="navbar-item"><a href="https://github.com/szabgab/news-collector.rs">source</a></div>
     </div>
   </div>

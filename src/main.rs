@@ -29,7 +29,7 @@ struct Cli {
     web: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct FeedConfig {
     site: String,
@@ -47,13 +47,15 @@ fn get_empty_string() -> String {
     String::new()
 }
 
-#[derive(Debug, Deserialize)]
+#[allow(clippy::struct_field_names)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct Config {
     title: String,
     description: String,
     feeds: Vec<FeedConfig>,
     per_feed_limit: Option<usize>,
+    config_url: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -261,6 +263,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         .unwrap();
 
     let globals = liquid::object!({
+        "config": &config,
         "posts": &posts,
         "title": config.title,
         "description": config.description,
