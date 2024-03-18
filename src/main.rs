@@ -141,8 +141,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
             }
         };
 
-        let mut my_posts = get_posts(feed, feed_cfg, &feed_cfg.title, config);
-        posts.append(&mut my_posts);
+        posts.append(&mut get_posts(feed, feed_cfg, &feed_cfg.title, config));
     }
 
     #[allow(clippy::min_ident_chars)]
