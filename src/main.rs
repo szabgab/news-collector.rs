@@ -161,8 +161,7 @@ fn get_posts(
     let mut per_feed_counter: usize = 0;
     //log::debug!("feed: {feed:?}");
     for entry in feed.entries {
-        let filter = &feed_cfg.filter;
-        let Some(post) = get_post(entry, filter, &feed_cfg.feed_id, site_title) else {
+        let Some(post) = get_post(entry, &feed_cfg.filter, &feed_cfg.feed_id, site_title) else {
             continue;
         };
         my_posts.push(post);
