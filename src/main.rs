@@ -151,6 +151,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
         let mut per_feed_counter: usize = 0;
         //log::debug!("feed: {feed:?}");
         for entry in feed.entries {
+            let filter = &feed_cfg.filter;
             // let title = match &entry.title {
             //     Some(val) => val.content.clone(),
             //     None => {
@@ -175,11 +176,11 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
             };
             let title = title.content.clone();
 
-            if !feed_cfg.filter.is_empty() {
-                let re = match Regex::new(&feed_cfg.filter) {
+            if !filter.is_empty() {
+                let re = match Regex::new(filter) {
                     Ok(re) => re,
                     Err(err) => {
-                        log::error!("filter '{}' is not a valid regex: {err}", feed_cfg.filter);
+                        log::error!("filter '{filter}' is not a valid regex: {err}");
                         continue;
                     }
                 };
