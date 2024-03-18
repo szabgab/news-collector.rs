@@ -6,6 +6,7 @@ use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize, Serializer};
 use std::fs::File;
 use std::io::Write;
+//use std::ops::ControlFlow;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const FEEDS: &str = "feeds";
@@ -152,65 +153,8 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
         //log::debug!("feed: {feed:?}");
         for entry in feed.entries {
             let filter = &feed_cfg.filter;
-            // let title = match &entry.title {
-            //     Some(val) => val.content.clone(),
-            //     None => {
-            //         log::warn!("Missing title {:?}", &entry);
-            //         continue;
-            //     }
-            // };
-
-            let Some(published) = entry.published else {
-                log::error!("Missing published field {:?}", entry);
+            let Some(post) = get_post(entry, filter, feed_cfg, &site_title) else {
                 continue;
-            };
-
-            let Some(link) = entry.links.first() else {
-                log::error!("No link found {:?}", entry);
-                continue;
-            };
-
-            let Some(title) = entry.title else {
-                log::error!("Missing title {:?}", &entry);
-                continue;
-            };
-            let title = title.content.clone();
-
-            if !filter.is_empty() {
-                let re = match Regex::new(filter) {
-                    Ok(re) => re,
-                    Err(err) => {
-                        log::error!("filter '{filter}' is not a valid regex: {err}");
-                        continue;
-                    }
-                };
-
-                let summary = match entry.summary {
-                    Some(val) => val.content,
-                    None => String::new(),
-                };
-
-                if re.captures(title.to_lowercase().as_str()).is_none()
-                    && re.captures(summary.to_lowercase().as_str()).is_none()
-                {
-                    log::info!(
-                        "Skipping entry {title} as it did not match filter '{}'",
-                        feed_cfg.filter
-                    );
-                    continue;
-                }
-                log::info!(
-                    "Including entry {title} as it matched filter '{}'",
-                    feed_cfg.filter
-                );
-            }
-
-            let post = Post {
-                title,
-                published,
-                url: link.href.clone(), // TODO why is this a list?
-                feed_id: feed_cfg.feed_id.clone(),
-                site_title: site_title.clone(),
             };
             posts.push(post);
 
@@ -226,6 +170,63 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
     #[allow(clippy::min_ident_chars)]
     posts.sort_by(|a, b| b.published.cmp(&a.published));
     Ok(posts)
+}
+
+fn get_post(
+    entry: feed_rs::model::Entry,
+    filter: &String,
+    feed_cfg: &FeedConfig,
+    site_title: &str,
+) -> Option<Post> {
+    let Some(published) = entry.published else {
+        log::error!("Missing published field {:?}", entry);
+        return None;
+    };
+    let Some(link) = entry.links.first() else {
+        log::error!("No link found {:?}", entry);
+        return None;
+    };
+    let Some(title) = entry.title else {
+        log::error!("Missing title {:?}", &entry);
+        return None;
+    };
+    let title = title.content.clone();
+    if !filter.is_empty() {
+        let re = match Regex::new(filter) {
+            Ok(re) => re,
+            Err(err) => {
+                log::error!("filter '{filter}' is not a valid regex: {err}");
+                return None;
+            }
+        };
+
+        let summary = match entry.summary {
+            Some(val) => val.content,
+            None => String::new(),
+        };
+
+        if re.captures(title.to_lowercase().as_str()).is_none()
+            && re.captures(summary.to_lowercase().as_str()).is_none()
+        {
+            log::info!(
+                "Skipping entry {title} as it did not match filter '{}'",
+                feed_cfg.filter
+            );
+            return None;
+        }
+        log::info!(
+            "Including entry {title} as it matched filter '{}'",
+            feed_cfg.filter
+        );
+    }
+    let post = Post {
+        title,
+        published,
+        url: link.href.clone(), // TODO why is this a list?
+        feed_id: feed_cfg.feed_id.clone(),
+        site_title: site_title.to_owned(),
+    };
+    Some(post)
 }
 
 fn generate_web_page(config: &Config) -> Result<(), String> {
