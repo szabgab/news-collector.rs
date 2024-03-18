@@ -141,7 +141,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
             }
         };
 
-        posts.append(&mut get_posts(feed, feed_cfg, &feed_cfg.title, config));
+        posts.append(&mut get_posts(feed, feed_cfg, config));
     }
 
     #[allow(clippy::min_ident_chars)]
@@ -149,18 +149,14 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
     Ok(posts)
 }
 
-fn get_posts(
-    feed: feed_rs::model::Feed,
-    feed_cfg: &FeedConfig,
-    site_title: &str,
-    config: &Config,
-) -> Vec<Post> {
+fn get_posts(feed: feed_rs::model::Feed, feed_cfg: &FeedConfig, config: &Config) -> Vec<Post> {
     let mut my_posts: Vec<Post> = vec![];
 
     let mut per_feed_counter: usize = 0;
     //log::debug!("feed: {feed:?}");
     for entry in feed.entries {
-        let Some(post) = get_post(entry, &feed_cfg.filter, &feed_cfg.feed_id, site_title) else {
+        let Some(post) = get_post(entry, &feed_cfg.filter, &feed_cfg.feed_id, &feed_cfg.title)
+        else {
             continue;
         };
         my_posts.push(post);
