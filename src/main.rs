@@ -133,14 +133,6 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
         }
 
         let site_title = feed_cfg.title.clone();
-        // let site_title = match feed.title {
-        //     Some(val) => String::from("XX"), //format!("{}", val),
-        //     None => {
-        //         log::error!("Title is missing from the configuration");
-        //         continue;
-        //     }
-        // };
-
         let text = std::fs::read_to_string(&filename).unwrap();
         let feed = match parser::parse(text.as_bytes()) {
             Ok(val) => val,
