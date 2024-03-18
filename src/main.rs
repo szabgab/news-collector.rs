@@ -162,7 +162,7 @@ fn get_posts(
     //log::debug!("feed: {feed:?}");
     for entry in feed.entries {
         let filter = &feed_cfg.filter;
-        let Some(post) = get_post(entry, filter, feed_cfg, site_title) else {
+        let Some(post) = get_post(entry, filter, &feed_cfg.feed_id, site_title) else {
             continue;
         };
         my_posts.push(post);
@@ -180,7 +180,7 @@ fn get_posts(
 fn get_post(
     entry: feed_rs::model::Entry,
     filter: &String,
-    feed_cfg: &FeedConfig,
+    feed_id: &str,
     site_title: &str,
 ) -> Option<Post> {
     let Some(published) = entry.published else {
@@ -213,22 +213,16 @@ fn get_post(
         if re.captures(title.to_lowercase().as_str()).is_none()
             && re.captures(summary.to_lowercase().as_str()).is_none()
         {
-            log::info!(
-                "Skipping entry {title} as it did not match filter '{}'",
-                feed_cfg.filter
-            );
+            log::info!("Skipping entry {title} as it did not match filter '{filter}'");
             return None;
         }
-        log::info!(
-            "Including entry {title} as it matched filter '{}'",
-            feed_cfg.filter
-        );
+        log::info!("Including entry {title} as it matched filter '{filter}'");
     }
     let post = Post {
         title,
         published,
         url: link.href.clone(), // TODO why is this a list?
-        feed_id: feed_cfg.feed_id.clone(),
+        feed_id: feed_id.to_owned(),
         site_title: site_title.to_owned(),
     };
     Some(post)
