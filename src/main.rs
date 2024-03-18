@@ -205,13 +205,14 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
                 );
             }
 
-            posts.push(Post {
+            let post = Post {
                 title,
                 published,
                 url: link.href.clone(), // TODO why is this a list?
                 feed_id: feed_cfg.feed_id.clone(),
                 site_title: site_title.clone(),
-            });
+            };
+            posts.push(post);
 
             if let Some(per_feed_limit) = config.per_feed_limit {
                 per_feed_counter = per_feed_counter.saturating_add(1);
