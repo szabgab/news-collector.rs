@@ -72,7 +72,7 @@ struct Post {
 
 #[derive(Debug)]
 struct Feed {
-    _config: FeedConfig,
+    config: FeedConfig,
     posts: Vec<Post>,
 }
 
@@ -149,7 +149,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Feed>, String> {
         };
 
         feeds.push(Feed {
-            _config: feed_cfg.clone(),
+            config: feed_cfg.clone(),
             posts: get_posts(feed, feed_cfg, config),
         });
     }
@@ -276,6 +276,21 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         .unwrap();
 
     let feeds = read_feeds(config)?;
+    for feed in &feeds {
+        let globals = liquid::object!({
+            "config": &config,
+            "posts": &feed.posts,
+            "title": config.title,
+            "description": config.description,
+            "now": now,
+        });
+        let output = template.render(&globals).unwrap();
+
+        let path = site_folder.join(format!("{}.html", feed.config.feed_id));
+        let mut file = File::create(path).unwrap();
+        writeln!(&mut file, "{output}").unwrap();
+    }
+
     let posts = get_combined_posts(config, &feeds);
     let globals = liquid::object!({
         "config": &config,
