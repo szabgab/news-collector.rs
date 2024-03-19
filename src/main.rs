@@ -146,6 +146,11 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
 
     #[allow(clippy::min_ident_chars)]
     posts.sort_by(|a, b| b.published.cmp(&a.published));
+
+    for post in &posts {
+        log::debug!("{}", post.title);
+    }
+
     Ok(posts)
 }
 
@@ -238,9 +243,6 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
     );
 
     let posts = read_feeds(config)?;
-    for post in &posts {
-        log::debug!("{}", post.title);
-    }
 
     let site_folder = std::path::PathBuf::from(SITE);
     if !site_folder.exists() {
