@@ -30,7 +30,7 @@ struct Cli {
     web: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(deny_unknown_fields)]
 struct FeedConfig {
     site: String,
@@ -59,7 +59,7 @@ struct Config {
     config_url: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 struct Post {
     title: String,
     url: String,
@@ -68,6 +68,12 @@ struct Post {
     published: DateTime<Utc>,
     site_title: String,
     feed_id: String,
+}
+
+#[derive(Debug)]
+struct Feed {
+    _config: FeedConfig,
+    posts: Vec<Post>,
 }
 
 #[allow(clippy::min_ident_chars)]
@@ -109,14 +115,15 @@ fn run() -> Result<(), String> {
     Ok(())
 }
 
-fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
+fn read_feeds(config: &Config) -> Result<Vec<Feed>, String> {
     log::info!("Start reading feeds");
 
     let feeds_folder = std::path::PathBuf::from(FEEDS);
     if !feeds_folder.exists() {
         return Err(format!("Feed folder {FEEDS} does not exist. Exciting."));
     }
-    let mut posts: Vec<Post> = vec![];
+
+    let mut feeds: Vec<Feed> = vec![];
 
     for feed_cfg in &config.feeds {
         log::info!(
@@ -141,13 +148,26 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
             }
         };
 
-        let mut new_posts = get_posts(feed, feed_cfg, config);
-        if let Some(per_feed_limit) = config.per_feed_limit {
-            new_posts.truncate(per_feed_limit);
-        };
-
-        posts.append(&mut new_posts);
+        feeds.push(Feed {
+            _config: feed_cfg.clone(),
+            posts: get_posts(feed, feed_cfg, config),
+        });
     }
+    Ok(feeds)
+}
+
+fn get_combined_posts(config: &Config, feeds: &[Feed]) -> Vec<Post> {
+    let mut posts: Vec<Post> = feeds
+        .iter()
+        .map(|feed| {
+            let mut my_posts = feed.posts.clone();
+            if let Some(per_feed_limit) = config.per_feed_limit {
+                my_posts.truncate(per_feed_limit);
+            };
+            my_posts
+        })
+        .collect::<Vec<Vec<Post>>>()
+        .concat();
 
     #[allow(clippy::min_ident_chars)]
     posts.sort_by(|a, b| b.published.cmp(&a.published));
@@ -156,7 +176,7 @@ fn read_feeds(config: &Config) -> Result<Vec<Post>, String> {
         log::debug!("{}", post.title);
     }
 
-    Ok(posts)
+    posts
 }
 
 fn get_posts(feed: feed_rs::model::Feed, feed_cfg: &FeedConfig, _config: &Config) -> Vec<Post> {
@@ -255,7 +275,8 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         .parse(template)
         .unwrap();
 
-    let posts = read_feeds(config)?;
+    let feeds = read_feeds(config)?;
+    let posts = get_combined_posts(config, &feeds);
     let globals = liquid::object!({
         "config": &config,
         "posts": &posts,
