@@ -232,6 +232,14 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
 
     let now: DateTime<Utc> = Utc::now().trunc_subsecs(0);
 
+    let site_folder = std::path::PathBuf::from(SITE);
+    if !site_folder.exists() {
+        match std::fs::create_dir_all(&site_folder) {
+            Ok(()) => {}
+            Err(err) => return Err(format!("Could not create the '{SITE}' folder: {err}")),
+        }
+    }
+
     let mut partials = Partials::empty();
     partials.add(
         "templates/navbar.html",
@@ -242,16 +250,6 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         include_str!("../templates/footer.html"),
     );
 
-    let posts = read_feeds(config)?;
-
-    let site_folder = std::path::PathBuf::from(SITE);
-    if !site_folder.exists() {
-        match std::fs::create_dir_all(&site_folder) {
-            Ok(()) => {}
-            Err(err) => return Err(format!("Could not create the '{SITE}' folder: {err}")),
-        }
-    }
-
     let template = include_str!("../templates/index.html");
     let template = liquid::ParserBuilder::with_stdlib()
         .partials(partials)
@@ -260,6 +258,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         .parse(template)
         .unwrap();
 
+    let posts = read_feeds(config)?;
     let globals = liquid::object!({
         "config": &config,
         "posts": &posts,
@@ -272,6 +271,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
     let path = site_folder.join("index.html");
     let mut file = File::create(path).unwrap();
     writeln!(&mut file, "{output}").unwrap();
+
     Ok(())
 }
 
