@@ -302,6 +302,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
 
     let total_posts_count = feeds.iter().map(|feed| feed.posts.len()).sum();
     let posts = get_combined_posts(config, &feeds);
+    let front_page_count = posts.len();
     let globals = liquid::object!({
         "config": &config,
         "posts": &posts,
@@ -318,7 +319,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
     create_about_page(
         site_folder.join("about.html"),
         config,
-        posts.len(),
+        front_page_count,
         total_posts_count,
         now,
     );
