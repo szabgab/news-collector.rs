@@ -266,6 +266,10 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         "templates/footer.html",
         include_str!("../templates/footer.html"),
     );
+    partials.add(
+        "templates/header.html",
+        include_str!("../templates/header.html"),
+    );
 
     let template = include_str!("../templates/index.html");
     let template = liquid::ParserBuilder::with_stdlib()
