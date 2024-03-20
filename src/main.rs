@@ -244,19 +244,7 @@ fn get_post(
     Some(post)
 }
 
-fn generate_web_page(config: &Config) -> Result<(), String> {
-    log::info!("Start generating web page");
-
-    let now: DateTime<Utc> = Utc::now().trunc_subsecs(0);
-
-    let site_folder = std::path::PathBuf::from(SITE);
-    if !site_folder.exists() {
-        match std::fs::create_dir_all(&site_folder) {
-            Ok(()) => {}
-            Err(err) => return Err(format!("Could not create the '{SITE}' folder: {err}")),
-        }
-    }
-
+fn get_partials() -> Partials {
     let mut partials = Partials::empty();
     partials.add(
         "templates/navbar.html",
@@ -270,6 +258,23 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         "templates/header.html",
         include_str!("../templates/header.html"),
     );
+    partials
+}
+
+fn generate_web_page(config: &Config) -> Result<(), String> {
+    log::info!("Start generating web page");
+
+    let now: DateTime<Utc> = Utc::now().trunc_subsecs(0);
+
+    let site_folder = std::path::PathBuf::from(SITE);
+    if !site_folder.exists() {
+        match std::fs::create_dir_all(&site_folder) {
+            Ok(()) => {}
+            Err(err) => return Err(format!("Could not create the '{SITE}' folder: {err}")),
+        }
+    }
+
+    let partials = get_partials();
 
     let template = include_str!("../templates/index.html");
     let template = liquid::ParserBuilder::with_stdlib()
@@ -295,6 +300,7 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
         writeln!(&mut file, "{output}").unwrap();
     }
 
+    let total_posts_count = feeds.iter().map(|feed| feed.posts.len()).sum();
     let posts = get_combined_posts(config, &feeds);
     let globals = liquid::object!({
         "config": &config,
@@ -309,7 +315,45 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
     let mut file = File::create(path).unwrap();
     writeln!(&mut file, "{output}").unwrap();
 
+    create_about_page(
+        site_folder.join("about.html"),
+        config,
+        posts.len(),
+        total_posts_count,
+        now,
+    );
+
     Ok(())
+}
+
+fn create_about_page(
+    path: std::path::PathBuf,
+    config: &Config,
+    front_page_count: usize,
+    total_posts_count: usize,
+    now: DateTime<Utc>,
+) {
+    let partials = get_partials();
+    let template = include_str!("../templates/about.html");
+    let template = liquid::ParserBuilder::with_stdlib()
+        .partials(partials)
+        .build()
+        .unwrap()
+        .parse(template)
+        .unwrap();
+
+    let globals = liquid::object!({
+        "config": &config,
+        "front_page_count": front_page_count,
+        "total_posts_count": total_posts_count,
+        "title": config.title,
+        "description": config.description,
+        "now": now,
+    });
+    let output = template.render(&globals).unwrap();
+
+    let mut file = File::create(path).unwrap();
+    writeln!(&mut file, "{output}").unwrap();
 }
 
 fn download(config: &Config, limit: u32) -> Result<u32, String> {
