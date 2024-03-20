@@ -303,18 +303,13 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
     let total_posts_count = feeds.iter().map(|feed| feed.posts.len()).sum();
     let posts = get_combined_posts(config, &feeds);
     let front_page_count = posts.len();
-    let globals = liquid::object!({
-        "config": &config,
-        "posts": &posts,
-        "title": config.title,
-        "description": config.description,
-        "now": now,
-    });
-    let output = template.render(&globals).unwrap();
-
-    let path = site_folder.join("index.html");
-    let mut file = File::create(path).unwrap();
-    writeln!(&mut file, "{output}").unwrap();
+    create_main_page(
+        config,
+        &posts,
+        now,
+        &template,
+        site_folder.join("index.html"),
+    );
 
     create_about_page(
         site_folder.join("about.html"),
@@ -325,6 +320,26 @@ fn generate_web_page(config: &Config) -> Result<(), String> {
     );
 
     Ok(())
+}
+
+fn create_main_page(
+    config: &Config,
+    posts: &[Post],
+    now: DateTime<Utc>,
+    template: &liquid::Template,
+    path: std::path::PathBuf,
+) {
+    let globals = liquid::object!({
+        "config": &config,
+        "posts": &posts,
+        "title": config.title,
+        "description": config.description,
+        "now": now,
+    });
+    let output = template.render(&globals).unwrap();
+
+    let mut file = File::create(path).unwrap();
+    writeln!(&mut file, "{output}").unwrap();
 }
 
 fn create_about_page(
