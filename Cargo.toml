@@ -44,4 +44,5 @@ blanket_clippy_restriction_lints = "allow" # This is how I like to roll
 question_mark_used = "allow" # I want to use ?
 
 implicit_return = "allow" # I think I prefer having the explicit return statements so I might want to enable this
+multiple_crate_versions = "allow" # I don't know if we can do anything about dependencies bringing in different versions of they own dependencies.
 
