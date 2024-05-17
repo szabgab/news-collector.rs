@@ -447,12 +447,12 @@ fn read_config(path: &str) -> Result<Config, String> {
         .feeds
         .into_iter()
         .map(|mut feed| {
-            feed.feed_id = get_filename(&feed)
+            get_filename(&feed)
                 .file_name()
                 .unwrap()
                 .to_str()
                 .unwrap()
-                .to_owned();
+                .clone_into(&mut feed.feed_id);
             feed
         })
         .collect::<Vec<FeedConfig>>();
